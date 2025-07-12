@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Weather</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #000000; /* Solid black background */
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1); /* Slightly lighter for contrast */
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .search {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search input {
+            padding: 10px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            flex: 1;
+            background: #333;
+            color: #fff;
+        }
+
+        .search button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            background: #1db954;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search button:hover {
+            background: #17a34a;
+        }
+
+        .weather-info {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .weather-info img {
+            width: 100px;
+        }
+
+        .weather-info h2 {
+            font-size: 1.8em;
+        }
+
+        .weather-info p {
+            font-size: 1.2em;
+            color: #b3b3b3;
+        }
+
+        .error {
+            color: #ff4d4d;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* Cloud Styling */
+        .cloud {
+            position: absolute;
+            background: #1c1c1c; /* Dark gray-black for clouds */
+            border-radius: 50%;
+            box-shadow: 
+                5px 5px 10px rgba(0, 0, 0, 0.7), /* 3D shadow */
+                inset -3px -3px 5px rgba(0, 0, 0, 0.5), /* Inner shadow for depth */
+                inset 3px 3px 5px rgba(50, 50, 50, 0.3); /* Highlight for 3D effect */
+            z-index: 1;
+        }
+
+        /* Fixed Clouds */
+        .cloud.fixed {
+            position: fixed;
+        }
+
+        .cloud:nth-child(1) {
+            width: 150px;
+            height: 50px;
+            top: 10%;
+            left: 10%;
+        }
+
+        .cloud:nth-child(2) {
+            width: 100px;
+            height: 30px;
+            top: 20%;
+            right: 15%;
+        }
+
+        .cloud:nth-child(3) {
+            width: 200px;
+            height: 60px;
+            top: 30%;
+            left: 20%;
+        }
+
+        /* Moving Clouds */
+        .cloud.moving {
+            animation: moveCloud linear infinite;
+        }
+
+        .cloud:nth-child(4) {
+            width: 120px;
+            height: 40px;
+            top: 15%;
+            left: -200px;
+            animation-duration: 35s;
+        }
+
+        .cloud:nth-child(5) {
+            width: 180px;
+            height: 55px;
+            top: 25%;
+            left: -200px;
+            animation-duration: 40s;
+            animation-delay: 5s;
+        }
+
+        @keyframes moveCloud {
+            0% { transform: translateX(-200px); }
+            100% { transform: translateX(100vw); }
+        }
+
+        /* Water Droplets Animation */
+        .raindrop {
+            position: absolute;
+            width: 4px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: fall linear infinite;
+            z-index: 1;
+        }
+
+        .raindrop:nth-child(6) { left: 10%; animation-duration: 1.5s; }
+        .raindrop:nth-child(7) { left: 20%; animation-duration: 1.2s; animation-delay: 0.2s; }
+        .raindrop:nth-child(8) { left: 30%; animation-duration: 1.7s; animation-delay: 0.4s; }
+        .raindrop:nth-child(9) { left: 40%; animation-duration: 1.3s; animation-delay: 0.6s; }
+        .raindrop:nth-child(10) { left: 50%; animation-duration: 1.6s; animation-delay: 0.8s; }
+        .raindrop:nth-child(11) { left: 60%; animation-duration: 1.4s; animation-delay: 1s; }
+        .raindrop:nth-child(12) { left: 70%; animation-duration: 1.8s; animation-delay: 1.2s; }
+        .raindrop:nth-child(13) { left: 80%; animation-duration: 1.5s; animation-delay: 1.4s; }
+        .raindrop:nth-child(14) { left: 90%; animation-duration: 1.3s; animation-delay: 1.6s; }
+
+        @keyframes fall {
+            0% { transform: translateY(-100vh); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .search input, .search button {
+                font-size: 0.9em;
+            }
+            .cloud {
+                width: 100px !important;
+                height: 30px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cloud fixed"></div>
+    <div class="cloud fixed"></div>
+    <div class="cloud fixed"></div>
+    <div class="cloud moving"></div>
+    <div class="cloud moving"></div>
+    <div class="raindrop"></div>
+    <div class="raindrop"></div>
+    <div class="raindrop"></div>
+    <div class="raindrop"></div>
+    <div class="raindrop"></div>
+    <div class="raindrop"></div>
+    <div class="raindrop"></div>
+    <div class="raindrop"></div>
+    <div class="raindrop"></div>
+    <div class="container">
+        <h1>City Weather</h1>
+        <div class="search">
+            <input type="text" id="cityInput" placeholder="Enter city name">
+            <button onclick="getWeather()">Search</button>
+        </div>
+        <div class="weather-info" id="weatherInfo">
+            <img id="weatherIcon" src="" alt="Weather Icon">
+            <h2 id="cityName"></h2>
+            <p id="temperature"></p>
+            <p id="feelsLike"></p>
+            <p id="description"></p>
+            <p id="humidity"></p>
+            <p id="wind"></p>
+        </div>
+        <p class="error" id="errorMessage"></p>
+    </div>
+    <script>
+        async function getWeather() {
+            const city = document.getElementById('cityInput').value.trim();
+            const weatherInfo = document.getElementById('weatherInfo');
+            const errorMessage = document.getElementById('errorMessage');
+
+            if (!city) {
+                errorMessage.textContent = 'Please enter a city name';
+                errorMessage.style.display = 'block';
+                weatherInfo.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/weather?city=${encodeURIComponent(city)}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    errorMessage.textContent = data.error;
+                    errorMessage.style.display = 'block';
+                    weatherInfo.style.display = 'none';
+                } else {
+                    document.getElementById('cityName').textContent = data.city;
+                    document.getElementById('temperature').textContent = `Temperature: ${data.temperature}°C`;
+                    document.getElementById('feelsLike').textContent = `Feels Like: ${data.feels_like}°C`;
+                    document.getElementById('description').textContent = data.description;
+                    document.getElementById('humidity').textContent = `Humidity: ${data.humidity}%`;
+                    document.getElementById('wind').textContent = `Wind Speed: ${data.wind} m/s`;
+                    document.getElementById('weatherIcon').src = `http://openweathermap.org/img/wn/${data.icon}@2x.png`;
+                    weatherInfo.style.display = 'flex';
+                    errorMessage.style.display = 'none';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Error fetching weather data';
+                errorMessage.style.display = 'block';
+                weatherInfo.style.display = 'none';
+            }
+        }
+
+        // Trigger search on Enter key
+        document.getElementById('cityInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                getWeather();
+            }
+        });
+    </script>
+</body>
+</html>
